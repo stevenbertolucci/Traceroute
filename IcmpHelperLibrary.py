@@ -429,7 +429,8 @@ class IcmpHelperLibrary:
                 self.setIcmpTarget("127.0.0.1")
 
             print("---------------------------------------------------------------------------------------------------")
-            print("Pinging (" + self.__icmpTarget + ") " + self.__destinationIpAddress + "\n")
+            if self.getTtl() == 255 or self.getTtl() == 1:
+                print("Pinging (" + self.__icmpTarget + ") " + self.__destinationIpAddress + "\n")
 
             mySocket = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)
             mySocket.settimeout(self.__ipTimeout)
@@ -458,7 +459,19 @@ class IcmpHelperLibrary:
                     # Fetch the ICMP type and code from the received packet
                     icmpType, icmpCode = recvPacket[20:22]
 
-                    if icmpType == 11:                          # Time Exceeded
+                    # For Ping Program
+                    if self.getTtl() == 255 and addr[0] == self.__destinationIpAddress:
+                        print("[ICMP Type=%d" % icmpType, "] -> Echo Reply: \n")
+                        icmpReplyPacket = IcmpHelperLibrary.IcmpPacket_EchoReply(recvPacket)
+                        self.__validateIcmpReplyPacketWithOriginalPingData(icmpReplyPacket)
+                        icmpReplyPacket.printResultToConsole(self.getTtl(), timeReceived, addr)
+
+                        if icmpCode != 0:
+                            self.displayICMPcode(self.getIcmpCode())
+                            self.setPacketsQuants(1, 1)
+                        return  # Echo reply is the end and therefore should return
+
+                    elif icmpType == 11:                          # Time Exceeded
                         print("  TTL=%d    RTT=%.0f ms    Type=%d    Code=%d    %s" %
                                 (
                                     self.getTtl(),
@@ -483,33 +496,19 @@ class IcmpHelperLibrary:
                         self.displayICMPcode(self.getIcmpCode())
                         self.setPacketsQuants(0, 1)
 
-                    elif icmpType == 8:                         # Destination Unreachable
+                    # For traceroute program
+                    elif addr[0] == self.__destinationIpAddress and self.getTtl() != 255:
+                        print("\n -----> You have arrived at the destination server <----- \n", )
                         print("  TTL=%d    RTT=%.0f ms    Type=%d    Code=%d    %s" %
-                                  (
-                                      self.getTtl(),
-                                      (timeReceived - pingStartTime) * 1000,
-                                      icmpType,
-                                      icmpCode,
-                                      addr[0]
-                                  ) + "\n[ICMP Type=%d" % icmpType, "] -> Error: Destination Unreachable")
-                        self.displayICMPcode(self.getIcmpCode())
-                        self.setPacketsQuants(1, 1)
-
-                    elif icmpType == 0 and icmpCode == 0:
-                        print("You have arrived at the destination server!: ", )
-                        self.displayICMPcode(self.getIcmpCode())
-                        return
-
-                    elif icmpType == 0:                         # Echo Reply
-                        print("[ICMP Type=%d" % icmpType, "] -> Echo Reply: \n")
-                        icmpReplyPacket = IcmpHelperLibrary.IcmpPacket_EchoReply(recvPacket)
-                        self.__validateIcmpReplyPacketWithOriginalPingData(icmpReplyPacket)
-                        icmpReplyPacket.printResultToConsole(self.getTtl(), timeReceived, addr)
-
-                        if icmpCode != 0:
-                            self.displayICMPcode(self.getIcmpCode())
-                            self.setPacketsQuants(1, 1)
-                        return      # Echo reply is the end and therefore should return
+                              (
+                                  self.getTtl(),
+                                  (timeReceived - pingStartTime) * 1000,
+                                  icmpType,
+                                  icmpCode,
+                                  addr[0]
+                              ) + "\n[ICMP Type=%d" % icmpType, "] -> Echo Reply")
+                        mySocket.close()
+                        return 1
 
                     else:
                         print("error")
@@ -924,10 +923,12 @@ class IcmpHelperLibrary:
             raise IOError("Unable to resolve, {}".format(e))
 
         text = 'traceroute to {} ({}), {} hops max'.format(host, self.destinationIp, self.hops)
-        print("\n*** Traceroute Started ***")
+        print("\n\n***** Traceroute Started *****")
         print(text)
+        stopOrNot = 0
+        i = 0
 
-        for i in range(self.hops):
+        while stopOrNot != 1:
             icmpPacket = IcmpHelperLibrary.IcmpPacket()
 
             randomIdentifier = (os.getpid() & 0xffff)  # Get as 16-bit number - Limit based on ICMP header standards
@@ -936,7 +937,7 @@ class IcmpHelperLibrary:
             packetIdentifier = randomIdentifier
             packetSequenceNumber = i
 
-            while self.ttl <= self.hops:
+            while stopOrNot != 1:
                 receiver = self.createReceiver()
                 sender = self.createSender()
                 sender.sendto(b'', (host, self.port))
@@ -947,7 +948,7 @@ class IcmpHelperLibrary:
                     icmpPacket.setIcmpTarget(self.destinationIp)
                     icmpPacket.buildPacket_echoRequest(packetIdentifier, packetSequenceNumber)
                     icmpPacket.setTtl(self.ttl)
-                    icmpPacket.sendEchoRequest()
+                    stopOrNot = icmpPacket.sendEchoRequest()
                     #icmpPacket.receiveEchoReply()
                     if icmpPacket.getIcmpType() == 11 and icmpPacket.getIcmpCode() == 0:  # Time Exceeded
                         print("%d\t%s" % (self.ttl, address[0]))  # print hop number and router's address
@@ -959,8 +960,9 @@ class IcmpHelperLibrary:
                         print("%d\t%s" % (self.ttl, address[0]))  # print final destination's address
                         break
                     self.ttl += 1
+                    i += 1
                     data, address = receiver.recvfrom(2048)
-                    print("\nCurrent router's IP Address: ", address)
+                    print("\nThis router's IP Address: ", address)
 
                     if address == self.destinationIp:
                         break
@@ -973,7 +975,7 @@ class IcmpHelperLibrary:
                     receiver.close()
                     sender.close()
 
-        print("***** Traceroute Complete *****")
+        print("\n\n***** Traceroute Complete *****\n\n")
 
     def createReceiver(self):
         sock = socket(family=AF_INET, type=SOCK_RAW, proto=IPPROTO_ICMP)
