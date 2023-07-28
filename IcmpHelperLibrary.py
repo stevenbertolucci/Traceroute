@@ -416,14 +416,6 @@ class IcmpHelperLibrary:
             self.__dataRaw = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
             self.__packAndRecalculateChecksum()
 
-        def buildPacket2_echoRequest(self, packetIdentifier, packetSequenceNumber):
-            self.setIcmpType(11)
-            self.setIcmpCode(0)
-            self.setPacketIdentifier(packetIdentifier)
-            self.setPacketSequenceNumber(packetSequenceNumber)
-            self.__dataRaw = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-            self.__packAndRecalculateChecksum()
-
         def sendEchoRequest(self):
             if len(self.__icmpTarget.strip()) <= 0 | len(self.__destinationIpAddress.strip()) <= 0:
                 self.setIcmpTarget("127.0.0.1")
@@ -923,7 +915,7 @@ class IcmpHelperLibrary:
             raise IOError("Unable to resolve, {}".format(e))
 
         text = 'traceroute to {} ({}), {} hops max'.format(host, self.destinationIp, self.hops)
-        print("\n\n***** Traceroute Started *****")
+        print("\n\n***** Traceroute Started *****\n")
         print(text)
         stopOrNot = 0
         i = 0
@@ -968,7 +960,7 @@ class IcmpHelperLibrary:
                         break
 
                 except timeout:
-                    print('{:<4} *'.format(self.ttl))
+                    print('{:<4} *'.format(self.ttl - 1), "TYPE= %d" % icmpPacket.getIcmpType(), "Code= %d" % icmpPacket.getIcmpCode(), "Destination Unreachable: Port Unreachable")
                 except error as e:
                     raise IOError('Socket error: {}'.format(e))
                 finally:
@@ -1034,8 +1026,8 @@ def main():
     #icmpHelperPing.sendPing("164.151.129.20")
     #icmpHelperPing.sendPing("122.56.99.243")
     #icmpHelperPing.traceRoute("164.151.129.20")
-    #icmpHelperPing.traceRoute("142.250.189.164")
-    icmpHelperPing.traceRoute("199.59.243.224")         # Pearson's server at www.pearson.uk
+    icmpHelperPing.traceRoute("142.250.189.164")
+    #icmpHelperPing.traceRoute("199.59.243.224")         # Pearson's server at www.pearson.uk
     #icmpHelperPing.traceRoute("34.101.125.250")         # Google's server in Jakarta Indonesia
     
 
