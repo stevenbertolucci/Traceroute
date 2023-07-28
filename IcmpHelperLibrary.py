@@ -484,7 +484,7 @@ class IcmpHelperLibrary:
                         self.displayICMPcode(self.getIcmpCode())
                         self.setPacketsQuants(0, 1)
 
-                    elif icmpType == 3:                         # Destination Unreachable
+                    elif icmpType == 3 or icmpCode == 3:                         # Destination Unreachable
                         print("  TTL=%d    RTT=%.0f ms    Type=%d    Code=%d    %s" %
                                   (
                                       self.getTtl(),
@@ -949,16 +949,16 @@ class IcmpHelperLibrary:
                     icmpPacket.buildPacket_echoRequest(packetIdentifier, packetSequenceNumber)
                     icmpPacket.setTtl(self.ttl)
                     stopOrNot = icmpPacket.sendEchoRequest()
-                    #icmpPacket.receiveEchoReply()
-                    if icmpPacket.getIcmpType() == 11 and icmpPacket.getIcmpCode() == 0:  # Time Exceeded
-                        print("%d\t%s" % (self.ttl, address[0]))  # print hop number and router's address
-                    # Destination Unreachable (Port Unreachable)
-                    elif icmpPacket.getIcmpType() == 3 and icmpPacket.getIcmpCode() == 3:
-                        print('{:<4} {}'.format(self.ttl, address[0]))
-                        break
-                    elif icmpPacket.getIcmpType() == 0:  # Echo Reply
-                        print("%d\t%s" % (self.ttl, address[0]))  # print final destination's address
-                        break
+
+                    # if icmpPacket.getIcmpType() == 11 and icmpPacket.getIcmpCode() == 0:  # Time Exceeded
+                    #     print("%d\t%s" % (self.ttl, address[0]))  # print hop number and router's address
+                    # # Destination Unreachable (Port Unreachable)
+                    # elif icmpPacket.getIcmpType() == 3 and icmpPacket.getIcmpCode() == 3:
+                    #     print('{:<4} {}'.format(self.ttl, address[0]))
+                    #     break
+                    # elif icmpPacket.getIcmpType() == 0:  # Echo Reply
+                    #     print("%d\t%s" % (self.ttl, address[0]))  # print final destination's address
+                    #     break
                     self.ttl += 1
                     i += 1
                     data, address = receiver.recvfrom(2048)
@@ -981,7 +981,7 @@ class IcmpHelperLibrary:
         sock = socket(family=AF_INET, type=SOCK_RAW, proto=IPPROTO_ICMP)
         try:
             sock.bind(('', self.getport()))
-            sock.settimeout(0.5)
+            sock.settimeout(2.5)
         except error as e:
             raise IOError('Unable to bind receiver socket: {}'.format(e))
         return sock
@@ -1028,16 +1028,16 @@ def main():
     icmpHelperPing = IcmpHelperLibrary()
 
     # Choose one of the following by uncommenting out the line
-    icmpHelperPing.sendPing("209.233.126.254")
-    # icmpHelperPing.sendPing("www.google.com")
-    # icmpHelperPing.sendPing("www.google.com")
-    # icmpHelperPing.sendPing("gaia.cs.umass.edu")
-    # icmpHelperPing.sendPing("gaia.cs.umass.edu")
-    # icmpHelperPing.traceRoute("164.151.129.20")
-    # icmpHelperPing.sendPing("164.151.129.20")
-    icmpHelperPing.traceRoute("142.250.189.164")
-    # icmpHelperPing.sendPing("122.56.99.243")
-
+    #icmpHelperPing.sendPing("209.233.126.254")
+    #icmpHelperPing.sendPing("www.google.com")
+    icmpHelperPing.sendPing("gaia.cs.umass.edu")
+    #icmpHelperPing.sendPing("164.151.129.20")
+    #icmpHelperPing.sendPing("122.56.99.243")
+    #icmpHelperPing.traceRoute("164.151.129.20")
+    #icmpHelperPing.traceRoute("142.250.189.164")
+    icmpHelperPing.traceRoute("199.59.243.224")         # Pearson's server at www.pearson.uk
+    #icmpHelperPing.traceRoute("34.101.125.250")         # Google's server in Jakarta Indonesia
+    
 
 if __name__ == "__main__":
     main()
