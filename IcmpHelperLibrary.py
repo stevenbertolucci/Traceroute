@@ -941,16 +941,6 @@ class IcmpHelperLibrary:
                     icmpPacket.buildPacket_echoRequest(packetIdentifier, packetSequenceNumber)
                     icmpPacket.setTtl(self.ttl)
                     stopOrNot = icmpPacket.sendEchoRequest()
-
-                    # if icmpPacket.getIcmpType() == 11 and icmpPacket.getIcmpCode() == 0:  # Time Exceeded
-                    #     print("%d\t%s" % (self.ttl, address[0]))  # print hop number and router's address
-                    # # Destination Unreachable (Port Unreachable)
-                    # elif icmpPacket.getIcmpType() == 3 and icmpPacket.getIcmpCode() == 3:
-                    #     print('{:<4} {}'.format(self.ttl, address[0]))
-                    #     break
-                    # elif icmpPacket.getIcmpType() == 0:  # Echo Reply
-                    #     print("%d\t%s" % (self.ttl, address[0]))  # print final destination's address
-                    #     break
                     self.ttl += 1
                     i += 1
                     data, address = receiver.recvfrom(2048)
