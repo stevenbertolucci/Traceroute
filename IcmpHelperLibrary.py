@@ -437,6 +437,8 @@ class IcmpHelperLibrary:
                 endSelect = time.time()
                 howLongInSelect = (endSelect - startedSelect)
                 if not whatReady[0]:  # Timeout
+                    self.setIcmpType(3)
+                    self.setIcmpCode(3)
                     print("  TTL=%d" % self.getTtl(), "   *            Type=3     Code=3    Request timed out --> Destination Unreachable: Port Unreachable")
                 recvPacket, addr = mySocket.recvfrom(1024)  # recvPacket - bytes object representing data received
                 # addr  - address of socket sending data
@@ -505,7 +507,7 @@ class IcmpHelperLibrary:
                     else:
                         print("error")
             except timeout:
-                print("  *        *        *        *        *    Request timed out (By Exception).")
+                print("  *        *        *        *        *      Request timed out (By Exception).")
             finally:
                 mySocket.close()
 
