@@ -370,18 +370,14 @@ class IcmpHelperLibrary:
         def __validateIcmpReplyPacketWithOriginalPingData(self, icmpReplyPacket):
             # Hint: Work through comparing each value and identify if this is a valid response.
             icmpReplyPacket.setIsValidResponse(True)
+            icmpReplyPacket.setIcmpIdentifier_isValid(True)
+            icmpReplyPacket.setIcmpSequenceNumber_isValid(True)
+            icmpReplyPacket.setIcmpDataRaw_isValid(True)
 
             # Get Sequence #, Packet Identifier, and raw data
             sequenceNumber = icmpReplyPacket.getIcmpSequenceNumber()
             packetIdentifier = icmpReplyPacket.getIcmpIdentifier()
             rawData = icmpReplyPacket.getIcmpData()
-
-            # Print Debug Message
-            print("---- DEBUG MESSAGE ----")
-            # Print expected vs actual output
-            print("Actual Output: " + str(self.getPacketSequenceNumber()) + " " + str(self.getPacketIdentifier()) + " "
-                  + str(self.getDataRaw()))
-            print("Expected Output: " + str(sequenceNumber) + " " + str(packetIdentifier) + " " + str(rawData) + "\n")
 
             # Set debug value
             icmpReplyPacket.setIdentifierDebug(packetIdentifier, self.getPacketIdentifier())
@@ -396,10 +392,16 @@ class IcmpHelperLibrary:
                 return icmpReplyPacket.setIsValidResponse(True)
 
             else:
-                icmpReplyPacket.setIcmpIdentifier_isValid(False)
-                icmpReplyPacket.setIcmpSequenceNumber_isValid(False)
-                icmpReplyPacket.setIcmpDataRaw_isValid(False)
-                return icmpReplyPacket.setIsValidResponse(False)
+                # Print Debug Message
+                print("---- DEBUG MESSAGE ----")
+                # Print expected vs actual output
+                print("Actual Output: " + str(self.getPacketSequenceNumber()) + " " + str(self.getPacketIdentifier()) + " "
+                  + str(self.getDataRaw()))
+                print("Expected Output: " + str(sequenceNumber) + " " + str(packetIdentifier) + " " + str(rawData) + "\n")
+                # icmpReplyPacket.setIcmpIdentifier_isValid(False)
+                # icmpReplyPacket.setIcmpSequenceNumber_isValid(False)
+                # icmpReplyPacket.setIcmpDataRaw_isValid(False)
+                return #icmpReplyPacket.setIsValidResponse(False)
 
         # ############################################################################################################ #
         # IcmpPacket Class Public Functions                                                                            #
@@ -421,6 +423,7 @@ class IcmpHelperLibrary:
                 self.setIcmpTarget("127.0.0.1")
 
             print("---------------------------------------------------------------------------------------------------")
+            
             if self.getTtl() == 255 or self.getTtl() == 1:
                 print("Pinging (" + self.__icmpTarget + ") " + self.__destinationIpAddress + "\n")
 
@@ -445,7 +448,7 @@ class IcmpHelperLibrary:
                 timeReceived = time.time()
                 timeLeft = timeLeft - howLongInSelect
                 if timeLeft <= 0:
-                    print("  *        *        *        *        *    Request timed out (By no remaining time left).")
+                    print("  *        *        *        *        *    Request timed out (By no remaining time left).\n")
 
                 else:
                     # Calculate RTTs
@@ -792,36 +795,36 @@ class IcmpHelperLibrary:
             timeSent = struct.unpack("d", self.__recvPacket[28:28 + bytes])[0]
 
             # Is the icmp identifier valid?
-            if self.getIcmpIdentifier_isValid():
+            if not self.getIcmpIdentifier_isValid():
                 print("Identifier is valid")
             else:
                 expected, actual = self.getIdentifierDebug()
                 print("Expected Identifier: ", expected, " Actual: ", actual)
 
             # Is the icmp sequence valid?
-            if self.getIcmpSequenceNumber_isValid():
+            if not self.getIcmpSequenceNumber_isValid():
                 print("Sequence Number is valid")
             else:
                 expected, actual = self.getSequenceDebug()
                 print("Expected Sequence Number: ", expected, " Actual: ", actual)
 
             # Is the icmp raw data valid?
-            if self.getIcmpDataRaw_isValid():
-                print("Raw Data is valid")
+            if not self.getIcmpDataRaw_isValid():
+                print("Raw Data is valid\n")
             else:
                 expected, actual = self.getDataRawDebug()
                 print("Expected Raw Data: ", expected, " Actual: ", actual)
 
-            print("  TTL=%d    RTT=%.0f ms    Type=%d    Code=%d        Identifier=%d    Sequence Number=%d    %s" %
-                  (
-                      ttl,
-                      (timeReceived - timeSent) * 1000,
-                      self.getIcmpType(),
-                      self.getIcmpCode(),
-                      self.getIcmpIdentifier(),
-                      self.getIcmpSequenceNumber(),
-                      addr[0]
-                  ) + "\n")
+            # print("  TTL=%d    RTT=%.0f ms    Type=%d    Code=%d        Identifier=%d    Sequence Number=%d    %s" %
+            #       (
+            #           ttl,
+            #           (timeReceived - timeSent) * 1000,
+            #           self.getIcmpType(),
+            #           self.getIcmpCode(),
+            #           self.getIcmpIdentifier(),
+            #           self.getIcmpSequenceNumber(),
+            #           addr[0]
+            #       ) + "\n")
 
     # ################################################################################################################ #
     # Class IcmpHelperLibrary                                                                                          #
@@ -875,6 +878,12 @@ class IcmpHelperLibrary:
             
             Source: https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml
             -----------------------------------------------------------------------------------------------"""
+            if icmpPacket.getIcmpType() == 3:
+                self.setPacketsQuants(0, 1)
+                good, total = icmpPacket.getPacketsQuants()
+                self.setPacketsQuants(good, total)
+                print("Reply from %s" % host, ": bytes=", len(icmpPacket.getDataRaw()), " time=", ((start - end) * 1000), " TTL: ", icmpPacket.getTtl())
+            
             if icmpPacket.getIcmpType() == 8:
                 self.setPacketsQuants(1, 1)
                 good, total = icmpPacket.getPacketsQuants()
