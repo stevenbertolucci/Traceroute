@@ -879,20 +879,23 @@ class IcmpHelperLibrary:
                 self.setPacketsQuants(1, 1)
                 good, total = icmpPacket.getPacketsQuants()
                 self.setPacketsQuants(good, total)
+                print("Reply from %s" % host, ": bytes=", len(icmpPacket.getDataRaw()), " time=", ((start - end) * 1000), " TTL: ", self.getttl())
+                
 
             icmpPacket.printIcmpPacketHeader_hex() if self.__DEBUG_IcmpHelperLibrary else 0
             icmpPacket.printIcmpPacket_hex() if self.__DEBUG_IcmpHelperLibrary else 0
             # we should be confirming values are correct, such as identifier and sequence number and data
 
-            print("Maximum RTT: ", self.getRTTmax(), "\nMinimum RTT: ", self.getRTTmin(), "\nAverage RTT: ",
-                  self.getRTTavg(), "\n")
-            good, total = self.getPacketsQuants()
-            if total != 0:
-                packetLoss = ((self.__packetTotal - self.__packetSuccess) / self.__packetTotal) * 100
-                print("Packets: Sent = ", self.__packetTotal, ", Received = ", self.__packetSuccess)
-                print("Packet Loss: ", packetLoss, "%")
-            else:
-                print("Packet Loss: No packets were sent, so packet loss is undefined\n")
+            if i == 3:
+                print("\n*** Ping Statistics for: ", host, "***\nMaximum RTT: ", self.getRTTmax(), "\nMinimum RTT: ", self.getRTTmin(), "\nAverage RTT: ",
+                    self.getRTTavg(), "\n")
+                good, total = self.getPacketsQuants()
+                if total != 0:
+                    packetLoss = ((self.__packetTotal - self.__packetSuccess) / self.__packetTotal) * 100
+                    print("Packets: Sent = ", self.__packetTotal, ", Received = ", self.__packetSuccess)
+                    print("Packet Loss: ", packetLoss, "%")
+                else:
+                    print("Packet Loss: No packets were sent, so packet loss is undefined\n")
 
     """ ---------------------------------------------------------------------------------------------------
     Citations: 
@@ -959,13 +962,13 @@ class IcmpHelperLibrary:
                     receiver.close()
                     sender.close()
 
-        print("\n\n***** Traceroute Complete *****\n\n")
+        print("\n\n***** Trace Complete *****\n\n")
 
     def createReceiver(self):
         sock = socket(family=AF_INET, type=SOCK_RAW, proto=IPPROTO_ICMP)
         try:
             sock.bind(('', self.getport()))
-            sock.settimeout(2.5)
+            sock.settimeout(10)
         except error as e:
             raise IOError('Unable to bind receiver socket: {}'.format(e))
         return sock
