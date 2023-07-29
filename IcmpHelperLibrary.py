@@ -437,7 +437,7 @@ class IcmpHelperLibrary:
                 endSelect = time.time()
                 howLongInSelect = (endSelect - startedSelect)
                 if not whatReady[0]:  # Timeout
-                    print("  *        *        *        *        *    Request timed out.")
+                    print("  TTL=%d" % self.getTtl(), "   *            Type=3     Code=3    Request timed out --> Destination Unreachable: Port Unreachable")
                 recvPacket, addr = mySocket.recvfrom(1024)  # recvPacket - bytes object representing data received
                 # addr  - address of socket sending data
                 timeReceived = time.time()
@@ -950,7 +950,7 @@ class IcmpHelperLibrary:
                         break
 
                 except timeout:
-                    print('{:<4} *'.format(self.ttl - 1), "TYPE= %d" % icmpPacket.getIcmpType(), "Code= %d" % icmpPacket.getIcmpCode(), "Destination Unreachable: Port Unreachable")
+                    print("Pinging next available router...")
                 except error as e:
                     raise IOError('Socket error: {}'.format(e))
                 finally:
