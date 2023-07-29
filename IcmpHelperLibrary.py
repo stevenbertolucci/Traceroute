@@ -879,7 +879,7 @@ class IcmpHelperLibrary:
                 self.setPacketsQuants(1, 1)
                 good, total = icmpPacket.getPacketsQuants()
                 self.setPacketsQuants(good, total)
-                print("Reply from %s" % host, ": bytes=", len(icmpPacket.getDataRaw()), " time=", ((start - end) * 1000), " TTL: ", self.getttl())
+                print("Reply from %s" % host, ": bytes=", len(icmpPacket.getDataRaw()), " time=", ((start - end) * 1000), " TTL: ", icmpPacket.getTtl())
                 
 
             icmpPacket.printIcmpPacketHeader_hex() if self.__DEBUG_IcmpHelperLibrary else 0
