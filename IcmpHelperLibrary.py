@@ -406,7 +406,7 @@ class IcmpHelperLibrary:
                 icmpReplyPacket.setIcmpSequenceNumber_isValid(True)
                 icmpReplyPacket.setIcmpDataRaw_isValid(True)
                 return icmpReplyPacket.setIsValidResponse(True)
-
+            # If data does not match, print the debug messages
             else:
                 # Print Debug Message
                 print("---- DEBUG MESSAGE ----")
