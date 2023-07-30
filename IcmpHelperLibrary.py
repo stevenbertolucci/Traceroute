@@ -1028,15 +1028,18 @@ def main():
     # Choose one of the following by uncommenting out the line
     #icmpHelperPing.sendPing("209.233.126.254")
     #icmpHelperPing.sendPing("www.google.com")
-    icmpHelperPing.sendPing("gaia.cs.umass.edu")
+    #icmpHelperPing.sendPing("gaia.cs.umass.edu")
+    icmpHelperPing.sendPing("168.196.78.22")             # SKYNET TELECOM EIRELI in Brazil
     #icmpHelperPing.sendPing("164.151.129.20")
     #icmpHelperPing.sendPing("122.56.99.243")
-    #icmpHelperPing.traceRoute("104.21.28.187")           # Italian website: www.eabianca.it
+    #icmpHelperPing.traceRoute("104.21.28.187")          # Italian website: www.eabianca.it
     #icmpHelperPing.traceRoute("164.151.129.20")
     #icmpHelperPing.traceRoute("142.250.189.164")
     #icmpHelperPing.traceRoute("199.59.243.224")         # Pearson's server at www.pearson.uk
     #icmpHelperPing.traceRoute("34.101.125.250")         # Google's server in Jakarta Indonesia
     icmpHelperPing.traceRoute("gaia.cs.umass.edu")
+    icmpHelperPing.traceRoute("54.93.169.181")           # Amazon's AWS server in Frankfurt, Germany
+    icmpHelperPing.traceRoute("168.196.78.22")           # SKYNET TELECOM EIRELI in Brazil 
     
 
 if __name__ == "__main__":
