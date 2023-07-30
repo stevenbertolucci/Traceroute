@@ -89,7 +89,7 @@ class IcmpHelperLibrary:
     def getRTTavg(self):
         return self.__RTTavg
 
-    def getRTTtotalAndCount(self):
+    def getRTTstats(self):
         return self.__RTTtotal, self.__RTTcount
 
     def getStartEnd(self):
@@ -115,7 +115,7 @@ class IcmpHelperLibrary:
     def setRTTavg(self, RTT):
         self.__RTTavg = RTT
 
-    def setRTTtotalAndCount(self, RTT, count):
+    def setRTTstats(self, RTT, count):
         self.__RTTtotal = RTT
         self.__RTTcount += count
 
@@ -123,9 +123,9 @@ class IcmpHelperLibrary:
         self.__RTTstart = start
         self.__RTTend = end
 
-    def setPacketsData(self, good, total):
-        self.__packetSuccess += good
-        self.__packetTotal += total
+    def setPacketsData(self, received, sent):
+        self.__packetSuccess += received
+        self.__packetTotal += sent
 
     """ ------------------------------------------------------------------------------------------------
             Citations:
@@ -143,7 +143,7 @@ class IcmpHelperLibrary:
     def __calcRTT(self, timeReceived, timeSent):
         # Calculate RTTs
         current = (timeReceived - timeSent) * 1000
-        total, count = self.getRTTtotalAndCount()
+        sent, count = self.getRTTstats()
         self.setStartEnd(timeReceived, timeSent)
 
         if (self.getRTTmax() is None) and (self.getRTTmin() is None):
@@ -151,18 +151,18 @@ class IcmpHelperLibrary:
             self.setRTTmin(current)
             self.setRTTavg(0)
 
-        if (total == 0) and (count == 0):
-            self.setRTTtotalAndCount(current, 1)
+        if (sent == 0) and (count == 0):
+            self.setRTTstats(current, 1)
         else:
             # Set min, max, average
             if current > self.getRTTmax():
                 self.setRTTmax(current)
             elif current < self.getRTTmin():
                 self.setRTTmin(current)
-            total += current
+            sent += current
             count += 1
-            self.setRTTtotalAndCount(total, 1)
-            average = total / count
+            self.setRTTstats(sent, 1)
+            average = sent / count
             self.setRTTavg(average)
 
             return
@@ -241,7 +241,7 @@ class IcmpHelperLibrary:
         def getRTTavg(self):
             return self.__RTTavg
 
-        def getRTTtotalAndCount(self):
+        def getRTTstats(self):
             return self.__RTTtotal, self.__RTTcount
 
         def getStartEnd(self):
@@ -291,7 +291,7 @@ class IcmpHelperLibrary:
         def setRTTavg(self, RTT):
             self.__RTTavg = RTT
 
-        def setRTTtotalAndCount(self, RTT, count):
+        def setRTTstats(self, RTT, count):
             self.__RTTtotal = RTT
             self.__RTTcount += count
 
@@ -299,9 +299,9 @@ class IcmpHelperLibrary:
             self.__RTTstart = start
             self.__RTTend = end
 
-        def setPacketsData(self, good, total):
-            self.__packetSuccess += good
-            self.__packetTotal += total
+        def setPacketsData(self, received, sent):
+            self.__packetSuccess += received
+            self.__packetTotal += sent
 
         # ############################################################################################################ #
         # IcmpPacket Class Private Functions                                                                           #
@@ -557,7 +557,7 @@ class IcmpHelperLibrary:
             current = (timeReceived - timeSent) * 1000
 
             # Initialize the variables
-            total, count = self.getRTTtotalAndCount()
+            sent, count = self.getRTTstats()
             self.setStartEnd(timeReceived, timeSent)
 
             if (self.getRTTmax() is None) and (self.getRTTmin() is None):
@@ -565,18 +565,18 @@ class IcmpHelperLibrary:
                 self.setRTTmin(current)
                 self.setRTTavg(0)
 
-            if (total == 0) and (count == 0):
-                self.setRTTtotalAndCount(current, 1)
+            if (sent == 0) and (count == 0):
+                self.setRTTstats(current, 1)
             else:
                 # Set min, max, average
                 if current > self.getRTTmax():
                     self.setRTTmax(current)
                 elif current < self.getRTTmin():
                     self.setRTTmin(current)
-                total += current
+                sent += current
                 count += 1
-                self.setRTTtotalAndCount(total, 1)
-                average = total / count
+                self.setRTTstats(sent, 1)
+                average = sent / count
                 self.setRTTavg(average)
                 return
 
@@ -825,17 +825,6 @@ class IcmpHelperLibrary:
                 expected, actual = self.getDataRawDebug()
                 print("Expected Raw Data: ", expected, " Actual: ", actual)
 
-            # print("  TTL=%d    RTT=%.0f ms    Type=%d    Code=%d        Identifier=%d    Sequence Number=%d    %s" %
-            #       (
-            #           ttl,
-            #           (timeReceived - timeSent) * 1000,
-            #           self.getIcmpType(),
-            #           self.getIcmpCode(),
-            #           self.getIcmpIdentifier(),
-            #           self.getIcmpSequenceNumber(),
-            #           addr[0]
-            #       ) + "\n")
-
     # ################################################################################################################ #
     # Class IcmpHelperLibrary                                                                                          #
     #                                                                                                                  #
@@ -890,15 +879,15 @@ class IcmpHelperLibrary:
             -----------------------------------------------------------------------------------------------"""
             if icmpPacket.getIcmpType() == 3:
                 self.setPacketsData(0, 1)
-                good, total = icmpPacket.getPacketsData()
-                self.setPacketsData(good, total)
+                received, sent = icmpPacket.getPacketsData()
+                self.setPacketsData(received, sent)
                 theTime = ((start - end) * 1000)
                 #print("\nReply from %s" % host, ": bytes=", len(icmpPacket.getDataRaw()), " time=", "%.2f" % theTime, " TTL: ", icmpPacket.getTtl())
             
             if icmpPacket.getIcmpType() == 8:
                 self.setPacketsData(1, 1)
-                good, total = icmpPacket.getPacketsData()
-                self.setPacketsData(good, total)
+                received, sent = icmpPacket.getPacketsData()
+                self.setPacketsData(received, sent)
                 theTime = ((start - end) * 1000)
                 print("\nReply from %s" % host, ": bytes=", len(icmpPacket.getDataRaw()), " time=", "%.2f" % theTime, " TTL: ", icmpPacket.getTtl())
                 
@@ -910,8 +899,8 @@ class IcmpHelperLibrary:
             if i == 3:
                 print("\n*** Ping Statistics for: ", host, "***\nMaximum RTT: ", "{:.2f}".format(self.getRTTmax()), "ms", "\nMinimum RTT: ", "{:.2f}".format(self.getRTTmin()), "ms", "\nAverage RTT: ",
                     "{:.2f}".format(self.getRTTavg()), "ms", "\n")
-                good, total = self.getPacketsData()
-                if total != 0:
+                received, sent = self.getPacketsData()
+                if sent != 0:
                     packetLoss = ((self.__packetTotal - self.__packetSuccess) / self.__packetTotal) * 100
                     print("Packets: Sent = ", self.__packetTotal, ", Received = ", self.__packetSuccess)
                     print("Packet Loss: ", packetLoss, "%")
@@ -1039,7 +1028,7 @@ def main():
     #icmpHelperPing.sendPing("209.233.126.254")
     #icmpHelperPing.sendPing("www.google.com")
     #icmpHelperPing.sendPing("gaia.cs.umass.edu")
-    icmpHelperPing.sendPing("168.196.78.22")             # SKYNET TELECOM EIRELI in Brazil
+    #icmpHelperPing.sendPing("168.196.78.22")             # SKYNET TELECOM EIRELI in Brazil
     #icmpHelperPing.sendPing("164.151.129.20")
     #icmpHelperPing.sendPing("122.56.99.243")
     #icmpHelperPing.traceRoute("104.21.28.187")          # Italian website: www.eabianca.it
