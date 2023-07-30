@@ -1036,8 +1036,8 @@ def main():
     #icmpHelperPing.traceRoute("142.250.189.164")
     #icmpHelperPing.traceRoute("199.59.243.224")         # Pearson's server at www.pearson.uk
     #icmpHelperPing.traceRoute("34.101.125.250")         # Google's server in Jakarta Indonesia
-    #icmpHelperPing.traceRoute("gaia.cs.umass.edu")
-    icmpHelperPing.traceRoute("54.93.169.181")           # Amazon's AWS server in Frankfurt, Germany
+    icmpHelperPing.traceRoute("gaia.cs.umass.edu")
+    #icmpHelperPing.traceRoute("54.93.169.181")           # Amazon's AWS server in Frankfurt, Germany
     #icmpHelperPing.traceRoute("168.196.78.22")          # SKYNET TELECOM EIRELI in Brazil 
     
 
