@@ -85,7 +85,7 @@ class IcmpHelperLibrary:
     def getStartEnd(self):
         return self.__RTTstart, self.__RTTend
 
-    def getPacketsQuants(self):
+    def getPacketsData(self):
         return self.__packetSuccess, self.__packetTotal
 
     # ################################################################################################################ #
@@ -113,7 +113,7 @@ class IcmpHelperLibrary:
         self.__RTTstart = start
         self.__RTTend = end
 
-    def setPacketsQuants(self, good, total):
+    def setPacketsData(self, good, total):
         self.__packetSuccess += good
         self.__packetTotal += total
 
@@ -237,7 +237,7 @@ class IcmpHelperLibrary:
         def getStartEnd(self):
             return self.__RTTstart, self.__RTTend
 
-        def getPacketsQuants(self):
+        def getPacketsData(self):
             return self.__packetSuccess, self.__packetTotal
 
         # ############################################################################################################ #
@@ -289,7 +289,7 @@ class IcmpHelperLibrary:
             self.__RTTstart = start
             self.__RTTend = end
 
-        def setPacketsQuants(self, good, total):
+        def setPacketsData(self, good, total):
             self.__packetSuccess += good
             self.__packetTotal += total
 
@@ -442,13 +442,13 @@ class IcmpHelperLibrary:
                 if not whatReady[0]:  # Timeout
                     self.setIcmpType(3)
                     self.setIcmpCode(3)
-                    print("  TTL=%d" % self.getTtl(), "   *            Type=3     Code=3    Request timed out --> Destination Unreachable: Port Unreachable")
+                    print("  TTL=%d" % self.getTtl(), "     *          Type=3     Code=3     Request timed out --> Destination Unreachable: Port Unreachable")
                 recvPacket, addr = mySocket.recvfrom(1024)  # recvPacket - bytes object representing data received
                 # addr  - address of socket sending data
                 timeReceived = time.time()
                 timeLeft = timeLeft - howLongInSelect
                 if timeLeft <= 0:
-                    print("  *        *        *        *        *    Request timed out (By no remaining time left).\n")
+                    print("      *        *            *        *          Request timed out (By no remaining time left).\n")
 
                 else:
                     # Calculate RTTs
@@ -465,7 +465,7 @@ class IcmpHelperLibrary:
 
                         if icmpCode != 0:
                             self.displayICMPcode(self.getIcmpCode())
-                            self.setPacketsQuants(1, 1)
+                            self.setPacketsData(1, 1)
                         return  # Echo reply is the end and therefore should return
 
                     elif icmpType == 11:                          # Time Exceeded
@@ -479,7 +479,7 @@ class IcmpHelperLibrary:
                                 )
                               + "\n[ICMP Type=%d" % icmpType, "] -> Error: Time Exceeded")
                         self.displayICMPcode(self.getIcmpCode())
-                        self.setPacketsQuants(0, 1)
+                        self.setPacketsData(0, 1)
 
                     elif icmpType == 3 or icmpCode == 3:                         # Destination Unreachable
                         print("  TTL=%d    RTT=%.0f ms    Type=%d    Code=%d    %s" %
@@ -491,7 +491,7 @@ class IcmpHelperLibrary:
                                       addr[0]
                                   ) + "\n[ICMP Type=%d" % icmpType, "] -> Error: Destination Unreachable")
                         self.displayICMPcode(self.getIcmpCode())
-                        self.setPacketsQuants(0, 1)
+                        self.setPacketsData(0, 1)
 
                     # For traceroute program
                     elif addr[0] == self.__destinationIpAddress and self.getTtl() != 255:
@@ -510,7 +510,7 @@ class IcmpHelperLibrary:
                     else:
                         print("error")
             except timeout:
-                print("  *        *        *        *        *      Request timed out (By Exception).")
+                print("  *           *              *        *        Request timed out (By Exception).")
             finally:
                 mySocket.close()
 
@@ -810,7 +810,7 @@ class IcmpHelperLibrary:
 
             # Is the icmp raw data valid?
             if not self.getIcmpDataRaw_isValid():
-                print("Raw Data is valid\n")
+                print("Raw Data is valid")
             else:
                 expected, actual = self.getDataRawDebug()
                 print("Expected Raw Data: ", expected, " Actual: ", actual)
@@ -879,16 +879,18 @@ class IcmpHelperLibrary:
             Source: https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml
             -----------------------------------------------------------------------------------------------"""
             if icmpPacket.getIcmpType() == 3:
-                self.setPacketsQuants(0, 1)
-                good, total = icmpPacket.getPacketsQuants()
-                self.setPacketsQuants(good, total)
-                print("Reply from %s" % host, ": bytes=", len(icmpPacket.getDataRaw()), " time=", ((start - end) * 1000), " TTL: ", icmpPacket.getTtl())
+                self.setPacketsData(0, 1)
+                good, total = icmpPacket.getPacketsData()
+                self.setPacketsData(good, total)
+                theTime = ((start - end) * 1000)
+                #print("\nReply from %s" % host, ": bytes=", len(icmpPacket.getDataRaw()), " time=", "%.2f" % theTime, " TTL: ", icmpPacket.getTtl())
             
             if icmpPacket.getIcmpType() == 8:
-                self.setPacketsQuants(1, 1)
-                good, total = icmpPacket.getPacketsQuants()
-                self.setPacketsQuants(good, total)
-                print("Reply from %s" % host, ": bytes=", len(icmpPacket.getDataRaw()), " time=", ((start - end) * 1000), " TTL: ", icmpPacket.getTtl())
+                self.setPacketsData(1, 1)
+                good, total = icmpPacket.getPacketsData()
+                self.setPacketsData(good, total)
+                theTime = ((start - end) * 1000)
+                print("\nReply from %s" % host, ": bytes=", len(icmpPacket.getDataRaw()), " time=", "%.2f" % theTime, " TTL: ", icmpPacket.getTtl())
                 
 
             icmpPacket.printIcmpPacketHeader_hex() if self.__DEBUG_IcmpHelperLibrary else 0
@@ -898,7 +900,7 @@ class IcmpHelperLibrary:
             if i == 3:
                 print("\n*** Ping Statistics for: ", host, "***\nMaximum RTT: ", self.getRTTmax(), "\nMinimum RTT: ", self.getRTTmin(), "\nAverage RTT: ",
                     self.getRTTavg(), "\n")
-                good, total = self.getPacketsQuants()
+                good, total = self.getPacketsData()
                 if total != 0:
                     packetLoss = ((self.__packetTotal - self.__packetSuccess) / self.__packetTotal) * 100
                     print("Packets: Sent = ", self.__packetTotal, ", Received = ", self.__packetSuccess)
