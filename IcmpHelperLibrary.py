@@ -57,6 +57,7 @@ class IcmpHelperLibrary:
     #                                                                                                                  #
     # ################################################################################################################ #
 
+    # initializing variables
     def __init__(self, hops=50):
         self.__RTTmax = None
         self.__RTTmin = None
@@ -92,7 +93,7 @@ class IcmpHelperLibrary:
     def getRTTstats(self):
         return self.__RTTtotal, self.__RTTcount
 
-    def getStartEnd(self):
+    def getTimeStamp(self):
         return self.__RTTstart, self.__RTTend
 
     def getPacketsData(self):
@@ -119,7 +120,7 @@ class IcmpHelperLibrary:
         self.__RTTtotal = RTT
         self.__RTTcount += count
 
-    def setStartEnd(self, start, end):
+    def setTimeStamp(self, start, end):
         self.__RTTstart = start
         self.__RTTend = end
 
@@ -143,14 +144,18 @@ class IcmpHelperLibrary:
     def __calcRTT(self, timeReceived, timeSent):
         # Calculate RTTs
         current = (timeReceived - timeSent) * 1000
+        # Get RTT stats
         sent, count = self.getRTTstats()
-        self.setStartEnd(timeReceived, timeSent)
+        # Set RTTs
+        self.setTimeStamp(timeReceived, timeSent)
 
+        # Conditional statement to see if I need to set min and max with current RTT
         if (self.getRTTmax() is None) and (self.getRTTmin() is None):
             self.setRTTmax(current)
             self.setRTTmin(current)
             self.setRTTavg(0)
 
+        # If packet was never sent, increment number of sent packets
         if (sent == 0) and (count == 0):
             self.setRTTstats(current, 1)
         else:
@@ -191,15 +196,15 @@ class IcmpHelperLibrary:
         __DEBUG_IcmpPacket = False      # Allows for debug output
 
         def __init__(self):
-            self.__RTTmax = None
-            self.__RTTmin = None
-            self.__RTTavg = None
-            self.__RTTcount = 0
-            self.__RTTtotal = 0
-            self.__RTTstart = 0
-            self.__RTTend = 0
-            self.__packetTotal = 0
-            self.__packetSuccess = 0
+            self.__RTTmax = None        # RTT Max
+            self.__RTTmin = None        # RTT Min
+            self.__RTTavg = None        # RTT average
+            self.__RTTcount = 0         # Set variable to 0
+            self.__RTTtotal = 0         # "
+            self.__RTTstart = 0         # "
+            self.__RTTend = 0           # "
+            self.__packetTotal = 0      # "
+            self.__packetSuccess = 0    # "
 
         # ############################################################################################################ #
         # IcmpPacket Class Getters                                                                                     #
@@ -244,7 +249,7 @@ class IcmpHelperLibrary:
         def getRTTstats(self):
             return self.__RTTtotal, self.__RTTcount
 
-        def getStartEnd(self):
+        def getTimeStamp(self):
             return self.__RTTstart, self.__RTTend
 
         def getPacketsData(self):
@@ -295,7 +300,7 @@ class IcmpHelperLibrary:
             self.__RTTtotal = RTT
             self.__RTTcount += count
 
-        def setStartEnd(self, start, end):
+        def setTimeStamp(self, start, end):
             self.__RTTstart = start
             self.__RTTend = end
 
@@ -394,6 +399,7 @@ class IcmpHelperLibrary:
             icmpReplyPacket.setSequenceDebug(sequenceNumber, self.getPacketSequenceNumber())
             icmpReplyPacket.setDataRawDebug(rawData, self.getDataRaw())
 
+            # Compare the actual and expected data of seq num, packet ID, and Raw Data
             if ((sequenceNumber == self.getPacketSequenceNumber()) and (packetIdentifier == self.getPacketIdentifier())
                     and (rawData == self.getDataRaw())):
                 icmpReplyPacket.setIcmpIdentifier_isValid(True)
@@ -408,10 +414,7 @@ class IcmpHelperLibrary:
                 print("Actual Output: " + str(self.getPacketSequenceNumber()) + " " + str(self.getPacketIdentifier()) + " "
                   + str(self.getDataRaw()))
                 print("Expected Output: " + str(sequenceNumber) + " " + str(packetIdentifier) + " " + str(rawData) + "\n")
-                # icmpReplyPacket.setIcmpIdentifier_isValid(False)
-                # icmpReplyPacket.setIcmpSequenceNumber_isValid(False)
-                # icmpReplyPacket.setIcmpDataRaw_isValid(False)
-                return #icmpReplyPacket.setIsValidResponse(False)
+                return
 
         # ############################################################################################################ #
         # IcmpPacket Class Public Functions                                                                            #
@@ -434,6 +437,7 @@ class IcmpHelperLibrary:
 
             print("---------------------------------------------------------------------------------------------------")
             
+            # Output for the ping program to weed out unncessary result for the traceroute
             if self.getTtl() == 255 or self.getTtl() == 1:
                 print("Pinging (" + self.__icmpTarget + ") " + self.__destinationIpAddress + "\n")
 
@@ -466,13 +470,13 @@ class IcmpHelperLibrary:
                     # Fetch the ICMP type and code from the received packet
                     icmpType, icmpCode = recvPacket[20:22]
 
-                    # For Ping Program
+                    # For Ping Program when it receives a response
                     if self.getTtl() == 255 and addr[0] == self.__destinationIpAddress:
                         print("[ICMP Type=%d" % icmpType, "] -> Echo Reply: \n")
                         icmpReplyPacket = IcmpHelperLibrary.IcmpPacket_EchoReply(recvPacket)
                         self.__validateIcmpReplyPacketWithOriginalPingData(icmpReplyPacket)
                         icmpReplyPacket.printResultToConsole(self.getTtl(), timeReceived, addr)
-
+                        # If no echo reply, display the ICMP code to user, then increment packet sent and received
                         if icmpCode != 0:
                             self.displayICMPcode(self.getIcmpCode())
                             self.setPacketsData(1, 1)
@@ -503,7 +507,7 @@ class IcmpHelperLibrary:
                         self.displayICMPcode(self.getIcmpCode())
                         self.setPacketsData(0, 1)
 
-                    # For traceroute program
+                    # For traceroute program when it reaches the destination server
                     elif addr[0] == self.__destinationIpAddress and self.getTtl() != 255:
                         print("\n -----> You have arrived at the destination server <----- \n", )
                         print("  TTL=%d    RTT=%.0f ms    Type=%d    Code=%d    %s" %
@@ -558,13 +562,15 @@ class IcmpHelperLibrary:
 
             # Initialize the variables
             sent, count = self.getRTTstats()
-            self.setStartEnd(timeReceived, timeSent)
+            self.setTimeStamp(timeReceived, timeSent)
 
+            # Conditional statement to see if there exists min and max values
             if (self.getRTTmax() is None) and (self.getRTTmin() is None):
                 self.setRTTmax(current)
                 self.setRTTmin(current)
                 self.setRTTavg(0)
 
+            # If packet was never sent, increment number of sent packets
             if (sent == 0) and (count == 0):
                 self.setRTTstats(current, 1)
             else:
@@ -590,36 +596,10 @@ class IcmpHelperLibrary:
         def displayICMPcode(self, icmpCode):
             if icmpCode == 0:
                 print("Time To Live Exceeded in Transit")
-            elif icmpCode == 1:
-                print("Host Unreachable")
-            elif icmpCode == 2:
-                print("Protocol Unreachable")
             elif icmpCode == 3:
                 print("Port Unreachable")
-            elif icmpCode == 4:
-                print("Fragmentation Needed and Don't Fragment was Set")
-            elif icmpCode == 5:
-                print("Source Route Failed")
-            elif icmpCode == 6:
-                print("Destination Network Unknown")
-            elif icmpCode == 7:
-                print("Destination Host Unknown")
-            elif icmpCode == 8:
-                print("Source Host Isolated")
-            elif icmpCode == 9:
-                print("Communication with Destination Network is AdministrativelyProhibited")
-            elif icmpCode == 10:
-                print("Communication with Destination Host is AdministrativelyProhibited")
             elif icmpCode == 11:
                 print("Destination Network Unreachable for Type of Service")
-            elif icmpCode == 12:
-                print("Destination Host Unreachable for Type of Service")
-            elif icmpCode == 13:
-                print("Communication Administratively Prohibited")
-            elif icmpCode == 14:
-                print("Host Precedence Violation")
-            elif icmpCode == 15:
-                print("Precedence cutoff in effect")
 
     # ################################################################################################################ #
     # Class IcmpPacket_EchoReply                                                                                       #
@@ -811,7 +791,7 @@ class IcmpHelperLibrary:
                 expected, actual = self.getIdentifierDebug()
                 print("Expected Identifier: ", expected, " Actual: ", actual)
 
-            # Is the icmp sequence valid?
+            # Is the icmp sequence number valid?
             if not self.getIcmpSequenceNumber_isValid():
                 print("Sequence Number is valid")
             else:
@@ -866,7 +846,9 @@ class IcmpHelperLibrary:
             icmpPacket.setIcmpTarget(host)
             icmpPacket.sendEchoRequest()                                                # Build IP
 
-            start, end = icmpPacket.getStartEnd()
+            # Get RTT information
+            start, end = icmpPacket.getTimeStamp()
+            # Calculate RTT
             self.__calcRTT(start, end)
 
             """ ----------------------------------------------------------------------------------------------
@@ -877,6 +859,7 @@ class IcmpHelperLibrary:
             
             Source: https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml
             -----------------------------------------------------------------------------------------------"""
+            # If packet has exceeded TTL in transit (timeout), print the error results
             if icmpPacket.getIcmpType() == 3:
                 self.setPacketsData(0, 1)
                 received, sent = icmpPacket.getPacketsData()
@@ -884,6 +867,7 @@ class IcmpHelperLibrary:
                 theTime = ((start - end) * 1000)
                 #print("\nReply from %s" % host, ": bytes=", len(icmpPacket.getDataRaw()), " time=", "%.2f" % theTime, " TTL: ", icmpPacket.getTtl())
             
+            # If the packet has received a echo reply, print the results
             if icmpPacket.getIcmpType() == 8:
                 self.setPacketsData(1, 1)
                 received, sent = icmpPacket.getPacketsData()
@@ -896,6 +880,7 @@ class IcmpHelperLibrary:
             icmpPacket.printIcmpPacket_hex() if self.__DEBUG_IcmpHelperLibrary else 0
             # we should be confirming values are correct, such as identifier and sequence number and data
 
+            # Print the stats after the last packet has been sent
             if i == 3:
                 print("\n*** Ping Statistics for: ", host, "***\nMaximum RTT: ", "{:.2f}".format(self.getRTTmax()), "ms", "\nMinimum RTT: ", "{:.2f}".format(self.getRTTmin()), "ms", "\nAverage RTT: ",
                     "{:.2f}".format(self.getRTTavg()), "ms", "\n")
@@ -935,6 +920,7 @@ class IcmpHelperLibrary:
         stopOrNot = 0
         i = 0
 
+        # While the ping hasn't reached the destination router, do this: 
         while stopOrNot != 1:
             icmpPacket = IcmpHelperLibrary.IcmpPacket()
 
@@ -944,12 +930,16 @@ class IcmpHelperLibrary:
             packetIdentifier = randomIdentifier
             packetSequenceNumber = i
 
+            # Has it reached the destination server?
             while stopOrNot != 1:
+                # Create sockets for receiver and the routers
                 receiver = self.createReceiver()
                 sender = self.createSender()
+                # Send data to the destination
                 sender.sendto(b'', (host, self.port))
                 address = [0 for i in range(self.hops)]
 
+                # Build packet and display the results
                 try:
                     icmpPacket = IcmpHelperLibrary.IcmpPacket()
                     icmpPacket.setIcmpTarget(self.destinationIp)
@@ -974,6 +964,7 @@ class IcmpHelperLibrary:
 
         print("\n\n***** Trace Complete *****\n\n")
 
+    # Receiver
     def createReceiver(self):
         sock = socket(family=AF_INET, type=SOCK_RAW, proto=IPPROTO_ICMP)
         try:
@@ -982,7 +973,7 @@ class IcmpHelperLibrary:
         except error as e:
             raise IOError('Unable to bind receiver socket: {}'.format(e))
         return sock
-
+    # Client
     def createSender(self):
         sock = socket(family=AF_INET, type=SOCK_DGRAM, proto=IPPROTO_UDP)
         sock.setsockopt(IPPROTO_IP, IP_TTL, self.ttl)
@@ -1024,7 +1015,8 @@ class IcmpHelperLibrary:
 def main():
     icmpHelperPing = IcmpHelperLibrary()
 
-    # Choose one of the following by uncommenting out the line
+    # ---> Choose one of the following by uncommenting out the line <---
+
     #icmpHelperPing.sendPing("209.233.126.254")
     #icmpHelperPing.sendPing("www.google.com")
     icmpHelperPing.sendPing("gaia.cs.umass.edu")
