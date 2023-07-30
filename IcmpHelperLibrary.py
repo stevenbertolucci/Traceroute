@@ -47,7 +47,7 @@ class IcmpHelperLibrary:
     #                                                                                                                  #
     # ################################################################################################################ #
 
-    def __init__(self, hops=30):
+    def __init__(self, hops=50):
         self.__RTTmax = None
         self.__RTTmin = None
         self.__RTTavg = None
