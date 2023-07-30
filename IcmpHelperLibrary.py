@@ -1,3 +1,13 @@
+# Author: Steven Bertolucci
+# Course: CS-372 Introduction to networking
+# File: IcmpHelperLibrary.py
+# Last Modified: 7/29/23
+# -------------------------------------------------------------------------------------------
+# Description:                                                                              |
+#       This program does two things: Ping a Server and Trace the Route to the server       |
+#       using sockets. This program can handle ICMP Types 0, 3, and 11.                     |
+# -------------------------------------------------------------------------------------------
+
 # #################################################################################################################### #
 # Imports                                                                                                              #
 #                                                                                                                      #
@@ -1039,7 +1049,7 @@ def main():
     #icmpHelperPing.traceRoute("34.101.125.250")         # Google's server in Jakarta Indonesia
     #icmpHelperPing.traceRoute("gaia.cs.umass.edu")
     icmpHelperPing.traceRoute("54.93.169.181")           # Amazon's AWS server in Frankfurt, Germany
-    #icmpHelperPing.traceRoute("168.196.78.22")           # SKYNET TELECOM EIRELI in Brazil 
+    #icmpHelperPing.traceRoute("168.196.78.22")          # SKYNET TELECOM EIRELI in Brazil 
     
 
 if __name__ == "__main__":
