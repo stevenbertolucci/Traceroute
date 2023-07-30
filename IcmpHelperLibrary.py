@@ -898,8 +898,8 @@ class IcmpHelperLibrary:
             # we should be confirming values are correct, such as identifier and sequence number and data
 
             if i == 3:
-                print("\n*** Ping Statistics for: ", host, "***\nMaximum RTT: ", self.getRTTmax(), "\nMinimum RTT: ", self.getRTTmin(), "\nAverage RTT: ",
-                    self.getRTTavg(), "\n")
+                print("\n*** Ping Statistics for: ", host, "***\nMaximum RTT: ", "{:.2f}".format(self.getRTTmax()), "ms", "\nMinimum RTT: ", "{:.2f}".format(self.getRTTmin()), "ms", "\nAverage RTT: ",
+                    "{:.2f}".format(self.getRTTavg()), "ms", "\n")
                 good, total = self.getPacketsData()
                 if total != 0:
                     packetLoss = ((self.__packetTotal - self.__packetSuccess) / self.__packetTotal) * 100
