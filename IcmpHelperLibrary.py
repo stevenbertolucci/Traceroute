@@ -1027,7 +1027,7 @@ def main():
     # Choose one of the following by uncommenting out the line
     #icmpHelperPing.sendPing("209.233.126.254")
     #icmpHelperPing.sendPing("www.google.com")
-    #icmpHelperPing.sendPing("gaia.cs.umass.edu")
+    icmpHelperPing.sendPing("gaia.cs.umass.edu")
     #icmpHelperPing.sendPing("168.196.78.22")             # SKYNET TELECOM EIRELI in Brazil
     #icmpHelperPing.sendPing("164.151.129.20")
     #icmpHelperPing.sendPing("122.56.99.243")
