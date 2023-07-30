@@ -441,6 +441,7 @@ class IcmpHelperLibrary:
             if self.getTtl() == 255 or self.getTtl() == 1:
                 print("Pinging (" + self.__icmpTarget + ") " + self.__destinationIpAddress + "\n")
 
+            # Create socket
             mySocket = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)
             mySocket.settimeout(self.__ipTimeout)
             mySocket.bind(("", 0))
